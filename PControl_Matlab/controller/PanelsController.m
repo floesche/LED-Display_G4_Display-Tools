@@ -537,7 +537,7 @@ classdef PanelsController < handle
             chn = uint8(...
                 aoChannels(1)*8+aoChannels(2)*4+ ...
                 aoChannels(3)*2+aoChannels(4));
-            self.write([cmdData chn, dec2char(aoFunctionID, 2)]);
+            self.write([cmdData chn dec2char(aoFunctionID, 2)]);
             resp = self.expectResponse([0 1], 49, [], 0.1);
             if ~isempty(resp) && resp(2) == 0
                 rtn = true;

@@ -93,8 +93,7 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
         
         function sendActiveAO(testCase)
             for i = 0:15
-                onOff = str2num(char(num2cell(dec2bin(i))))';
-                onOff = padarray(onOff, [0 4-length(onOff)], 0, 'pre');
+                onOff = bitget(i, 4:-1:1);
                 testCase.verifyTrue(testCase.panelsController.setActiveAOChannels(onOff), ...
                     sprintf("PanelsController.setActiveAOChannels wasn't successfully completed for %d", i));
             end
@@ -102,8 +101,7 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
         
         function sendActiveAI(testCase)
             for i = 0:15
-                onOff = str2num(char(num2cell(dec2bin(i))))';
-                onOff = padarray(onOff, [0 4-length(onOff)], 0, 'pre');
+                onOff = bitget(i, 4:-1:1);
                 testCase.verifyTrue(testCase.panelsController.setActiveAIChannels(onOff), ...
                     sprintf("PanelsController.setActiveAIChannels wasn't successfully completed for %d", i));
             end
@@ -117,8 +115,7 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
             newDir = tempname;
             testCase.panelsController.setRootDirectory(newDir);
             for i = 0:15
-                onOff = str2num(char(num2cell(dec2bin(i))))';
-                onOff = padarray(onOff, [0 4-length(onOff)], 0, 'pre');
+                onOff = bitget(i, 4:-1:1);
                 testCase.verifyTrue(testCase.panelsController.setActiveAIChannels(onOff), ...
                     sprintf("PanelsController.setActiveAIChannels wasn't successfully completed for %d", i));
                 testCase.verifyTrue(testCase.panelsController.startLog(), ...
@@ -146,8 +143,7 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
                     testCase.panelsController.setAOFunctionID([0 0 0 101], 1);  
                 end            
                 for i = 1:15
-                    onOff = str2num(char(num2cell(dec2bin(i))))';
-                    onOff = padarray(onOff, [0 4-length(onOff)], 0, 'pre');
+                    onOff = bitget(i, 4:-1:1);
                     testCase.verifyTrue(testCase.panelsController.setActiveAIChannels(onOff), ...
                         sprintf("PanelsController.setActiveAIChannels wasn't successfully completed for %d", i));
                 end
@@ -354,10 +350,29 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
         function sendAOFunctionID(testCase)
             testCase.panelsController.setRootDirectory("C:\matlabroot\G4");
             for i = 0:15
-                onOff = str2double(char(num2cell(dec2bin(i))))';
-                onOff = padarray(onOff, [0 4-length(onOff)], 0, 'pre');
+                onOff = bitget(i, 4:-1:1);
                 testCase.verifyTrue(testCase.panelsController.setAOFunctionID(onOff, 1));
             end
+        end
+        
+        function runAOFunctionOutput(testCase)
+            testCase.panelsController.setRootDirectory("C:\matlabroot\G4");
+            
+            testCase.panelsController.setControlMode(1);
+            testCase.panelsController.setPatternID(1);
+            
+            testCase.panelsController.setPatternFunctionID(1);
+            for i = 4
+                %testCase.panelsController.startLog();
+                onOff = bitget(i, 4:-1:1);
+                disp(i);
+                testCase.verifyTrue(testCase.panelsController.setActiveAOChannels(onOff));
+                testCase.verifyTrue(testCase.panelsController.setAOFunctionID(onOff, 1));
+                %testCase.verifyTrue(testCase.panelsController.setActiveAOChannels(onOff));
+                testCase.verifyTrue(testCase.panelsController.startDisplay(50));
+                %testCase.panelsController.stopLog();
+            end
+            
         end
         
         function sendCombinedCommandSync(testCase)
