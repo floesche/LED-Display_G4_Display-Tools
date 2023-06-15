@@ -279,7 +279,7 @@ classdef PanelsController < handle
                 activeOutputChannels (1,:) {mustBeInteger,...
                      mustBeGreaterThanOrEqual(activeOutputChannels , 2),...
                      mustBeLessThanOrEqual(activeOutputChannels , 5)}...
-                    = [2 3 4 5] 
+                    = [2 3 4 5]
             end
             %TODO implement output channels
             rtn = false;
@@ -314,17 +314,34 @@ classdef PanelsController < handle
             % Return true if the active input channels were set correctly
             % and false if an unexpected response was received or the
             % response timed out after 100ms.
+            % 
+            % activeInputChannels can either be a number from 0 to 3 or an
+            % array with several values from 0 to 3. The default is [0 1 2
+            % 3], which means all channels are active.
             %
             % see also setActiveAOChannel
             arguments
                 self (1,1) PanelsController
-                activeInputChannels (1,4) logical = [false false false false]
+                activeInputChannels (1,:) {mustBeInteger,...
+                     mustBeGreaterThanOrEqual(activeInputChannels , 0),...
+                     mustBeLessThanOrEqual(activeInputChannels , 3)}...
+                    = [0 1 2 3] 
             end
             rtn = false;
             cmdData = char([2 19]); % Command 0x02 0x13
-            chn = uint8(...
-                activeInputChannels(1)*8+activeInputChannels(2)*4+ ...
-                activeInputChannels(3)*2+activeInputChannels(4));
+            chn = uint8(0);
+            if ~isempty(find(activeInputChannels == 0, 1))
+                chn = chn + 1;
+            end
+            if ~isempty(find(activeInputChannels == 1, 1))
+                chn = chn + 2;
+            end
+            if ~isempty(find(activeInputChannels == 2, 1))
+                chn = chn + 4;
+            end
+            if ~isempty(find(activeInputChannels == 3, 1))
+                chn = chn + 8;
+            end
             self.write([cmdData chn]);
             resp = self.expectResponse(0, 19, "Active Analog Input Channel For TCP Stream Value", 0.1);
             if ~isempty(resp)
