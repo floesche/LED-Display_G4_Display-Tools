@@ -362,15 +362,20 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
             testCase.panelsController.setPatternID(1);
             
             testCase.panelsController.setPatternFunctionID(1);
-            for i = 4
-                %testCase.panelsController.startLog();
+            for i = 1
                 onOff = bitget(i, 4:-1:1);
-                disp(i);
-                testCase.verifyTrue(testCase.panelsController.setActiveAOChannels(onOff));
-                testCase.verifyTrue(testCase.panelsController.setAOFunctionID(onOff, 1));
+                %disp(i);
                 %testCase.verifyTrue(testCase.panelsController.setActiveAOChannels(onOff));
-                testCase.verifyTrue(testCase.panelsController.startDisplay(50));
-                %testCase.panelsController.stopLog();
+                %testCase.verifyTrue(testCase.panelsController.setAOFunctionID(onOff, 8));
+                testCase.verifyTrue(testCase.panelsController.setAOFunctionID(2, 1));
+                testCase.verifyTrue(testCase.panelsController.setAOFunctionID(3, 2));
+                testCase.verifyTrue(testCase.panelsController.setAOFunctionID(5, 3));
+                %testCase.verifyTrue(testCase.panelsController.setActiveAOChannels(onOff));
+                %testCase.verifyTrue(testCase.panelsController.setActiveAOChannels(2));
+                testCase.verifyTrue(testCase.panelsController.setActiveAOChannels([2 5 3]));
+                testCase.panelsController.startLog();
+                testCase.verifyTrue(testCase.panelsController.startDisplay(500));
+                testCase.panelsController.stopLog();
             end
             
         end
@@ -505,12 +510,12 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
 %         end
         
         function testSetAOExtreme(testCase)
-            testCase.verifyTrue(testCase.panelsController.setAO('6', -10));
-            testCase.verifyTrue(testCase.panelsController.setAO('6', 0));
-            testCase.verifyTrue(testCase.panelsController.setAO('6', 10));
-            testCase.verifyTrue(testCase.panelsController.setAO('7', -10));
-            testCase.verifyTrue(testCase.panelsController.setAO('7', 0));
-            testCase.verifyTrue(testCase.panelsController.setAO('7', 10));
+            testCase.verifyTrue(testCase.panelsController.setAO(6, -10));
+            testCase.verifyTrue(testCase.panelsController.setAO(6, 0));
+            testCase.verifyTrue(testCase.panelsController.setAO(6, 10));
+            testCase.verifyTrue(testCase.panelsController.setAO(7, -10));
+            testCase.verifyTrue(testCase.panelsController.setAO(7, 0));
+            testCase.verifyTrue(testCase.panelsController.setAO(7, 10));
         end
         
         function testSetAORandom(testCase)
@@ -518,8 +523,8 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
             testCase.panelsController.startLog();
             for rnm = rand(1, 50)*20-10
                 disp(rnm);
-                testCase.verifyTrue(testCase.panelsController.setAO('6', rnm));
-                testCase.verifyTrue(testCase.panelsController.setAO('7', -rnm));
+                testCase.verifyTrue(testCase.panelsController.setAO(6, rnm));
+                testCase.verifyTrue(testCase.panelsController.setAO(7, -rnm));
                 pause(0.1);
             end
             testCase.panelsController.stopLog();
