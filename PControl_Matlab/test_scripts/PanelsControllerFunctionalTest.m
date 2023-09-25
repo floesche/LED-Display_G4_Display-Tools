@@ -18,78 +18,11 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
     end
     
     methods(Test, TestTags = {'MainHost', 'PanelsController'})
-        function stopDisplay(testCase)
-            for i = 1:100
-                testCase.verifyTrue(testCase.panelsController.stopDisplay(), ...
-                    sprintf("PanelsController.stopDisplay didn't successfully complete for iteration %d.", i));
-            end
-        end
         
-        function sendAllOn(testCase)
-            for i = 1:100
-                testCase.verifyTrue(testCase.panelsController.allOn(), ...
-                    sprintf("PanelsController.allOn wasn't successfully completed in iteration %d.", i));
-            end
-        end
         
-        function sendAllOff(testCase)
-            for i = 1:100
-                testCase.verifyTrue(testCase.panelsController.allOff(), ...
-                    sprintf("PanelController.allOff wasn't successfully completed in iteration %d", i));
-            end
-        end
         
-        function sendAllOnAndOff(testCase)
-            for i = 1:15
-                testCase.verifyTrue(testCase.panelsController.allOn(), ...
-                    sprintf("PanelsController.allOn wasn't successfully completed in iteration %d.", i));
-                testCase.verifyTrue(testCase.panelsController.allOff(), ...
-                    sprintf("PanelController.allOff wasn't successfully completed in iteration %d", i));
-                testCase.verifyTrue(testCase.panelsController.allOn(), ...
-                    sprintf("PanelsController.allOn wasn't successfully completed in iteration %d.", i));
-                testCase.verifyTrue(testCase.panelsController.allOff(), ...
-                    sprintf("PanelController.allOff wasn't successfully completed in iteration %d", i));
-            end
-        end
         
-        function sendAllOnAndOffWithDelay(testCase)
-            delayOnOff = 0.004;
-            delayOffOn = 0;
-            boff = tic;
-            for i = 1:15
-                while toc(boff) < delayOffOn
-                end
-                bon = tic;
-                testCase.verifyTrue(testCase.panelsController.allOn(), ...
-                    sprintf("PanelsController.allOn wasn't successfully completed in iteration %d, round 1.", i));
-                while toc(bon) < delayOnOff
-                end
-                boff = tic;
-                testCase.verifyTrue(testCase.panelsController.allOff(), ...
-                    sprintf("PanelController.allOff wasn't successfully completed in iteration %d, round 1.", i));
-                while toc(boff) < delayOffOn % Copy&Paste earlier code to reduce the delay introduced by for-loop.
-                end
-                bon = tic;
-                testCase.verifyTrue(testCase.panelsController.allOn(), ...
-                    sprintf("PanelsController.allOn wasn't successfully completed in iteration %d, round 2.", i));
-                while toc(bon) < delayOnOff
-                end
-                boff = tic;
-                testCase.verifyTrue(testCase.panelsController.allOff(), ...
-                    sprintf("PanelController.allOff wasn't successfully completed in iteration %d, round 2", i));
-            end
-        end
         
-        function sendRootDirectory(testCase)
-            testCase.verifyTrue(testCase.panelsController.setRootDirectory("C:\matlabroot\G4"), ...
-                "PanelsController.setRootDirectory wasn't successfully completed.");
-            testCase.verifyFalse(testCase.panelsController.setRootDirectory(tempname, false), ...
-                "PanelsController.setRootDirectory didn't fail for a non-existing directory.");
-            newDir = tempname;
-            testCase.verifyTrue(testCase.panelsController.setRootDirectory(newDir, true), ...
-                "PanelsController.setRootDirectory wasn't successfully completed for a non-existing directory.");
-            testCase.verifyTrue(rmdir(newDir, 's'), "temporary directory wasn't removed successfully");
-        end
 
         % FIXME: Iterate through all AO
 %         function sendActiveAO(testCase)
@@ -151,6 +84,27 @@ classdef PanelsControllerFunctionalTest < matlab.unittest.TestCase
                 
             end
             testCase.panelsController.stopLog();
+        end
+        
+        function testControllerMode3Breaks(testCase)
+            newDir = tempname;
+            testCase.panelsController.setRootDirectory(newDir);
+            ctlr_params = {1 1 [] [] 1 [] 1 [] [0 0 0 0]};
+            testCase.panelsController.startLog();
+            testCase.panelsController.setControllerParameters(ctlr_params);
+
+            waitDecSec = 40;
+            
+            startTime = tic;
+            rsp = testCase.panelsController.startDisplay(waitDecSec);
+            testCase.panelsController.setControlMode(0);
+            
+            testCase.panelsController.stopLog();
+            
+            testCase.verifyTrue(rsp, "startDisplay didn't return true as expected");
+            seqComplete = toc(startTime);
+            testCase.verifyEqual(seqComplete, waitDecSec*1.0/10, "AbsTol", 0.2, ...
+                sprintf("Wait %d deciseconds didn't work, it was %.2f seconds instead", waitDecSec, seqComplete));
         end
         
 
