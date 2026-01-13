@@ -1145,8 +1145,7 @@ classdef PanelsController < handle
             %  defined in iBufSz
             self.iBuf = [self.iBuf pnet(self.tcpConn, 'read', 65536, 'uint8', 'noblock')];
             if length(self.iBuf) > self.iBufSz
-                self.iBuf(1, length(self.iBuf) - self.iBufSz) = [];
-                % TODO: test this self.iBuf = self.iBuf(end - self.iBufSz + 1:end);
+                self.iBuf = self.iBuf(end - self.iBufSz + 1:end);
             end
         end
 
