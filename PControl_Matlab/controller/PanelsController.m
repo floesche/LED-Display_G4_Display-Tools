@@ -48,6 +48,7 @@ classdef PanelsController < handle
             if numel(varargin) > 1
                 self.setPort(varargin{2});
             end
+            self.prevLogStart = tic;
         end
 
         function open(self, startHost)
@@ -1145,6 +1146,7 @@ classdef PanelsController < handle
             self.iBuf = [self.iBuf pnet(self.tcpConn, 'read', 65536, 'uint8', 'noblock')];
             if length(self.iBuf) > self.iBufSz
                 self.iBuf(1, length(self.iBuf) - self.iBufSz) = [];
+                % TODO: test this self.iBuf = self.iBuf(end - self.iBufSz + 1:end);
             end
         end
 
@@ -1165,21 +1167,28 @@ classdef PanelsController < handle
                 pat.start = [];
                 self.pullResponse();
                 for rsp_i = rsp
-                    pat.start = [pat.start uint64(strfind(self.iBuf, [rsp_i cmd])-1)];
+                    foundIdx = strfind(self.iBuf, [rsp_i cmd]);
+                    if ~isempty(foundIdx)
+                        pat.start = [pat.start uint64(foundIdx(foundIdx > 1) - 1)];
+                    end
                 end
                 if ~isempty(pat.start)
-                    pat.end = pat.start + uint64(self.iBuf(pat.start));
-                    pat.start = pat.start(pat.end <= length(self.iBuf));
-                    pat.end = pat.end(pat.end <= length(self.iBuf));
-                    for i = 1:length(pat.start)
-                        response = char(self.iBuf(pat.start(i):pat.end(i)));
-                        if (~isempty(response) && isempty(rspString)) || ...
-                           (~isempty(response) && contains(response, rspString))
-                            found_response = true;
-                            self.iBuf(pat.start(i):pat.end(i)) = [];
-                            break;
-                        else
-                            response = [];
+                    pat.start = pat.start(pat.start >= 1 & pat.start <= length(self.iBuf));
+                    if ~isempty(pat.start)
+                        pat.end = pat.start + uint64(self.iBuf(pat.start));
+                        validIndices = (pat.end <= length(self.iBuf));
+                        pat.start = pat.start(validIndices);
+                        pat.end = pat.end(validIndices);
+                        for i = 1:length(pat.start)
+                            response = char(self.iBuf(pat.start(i):pat.end(i)));
+                            if (~isempty(response) && isempty(rspString)) || ...
+                               (~isempty(response) && contains(response, rspString))
+                                found_response = true;
+                                self.iBuf(pat.start(i):pat.end(i)) = [];
+                                break;
+                            else
+                                response = [];
+                            end
                         end
                     end
                 end
